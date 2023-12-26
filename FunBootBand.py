@@ -3,7 +3,9 @@ import numpy as np
 from scipy.linalg import svd
 
 def check_arguments(type, alpha, iid, k_coef, B, data):
-    # Function to check the validity of the input arguments
+    """
+    Function to check the validity of the input arguments
+    """
     if not isinstance(type, str):
         raise ValueError("'type' must be a variable of type 'character'.")
     elif type not in ["confidence", "prediction"]:
