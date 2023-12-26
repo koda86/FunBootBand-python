@@ -14,7 +14,11 @@ iid = True
 type = 'prediction'
 k_coef = 20
 
+# Test if check_arguments works as intended
 print(FunBootBand.check_arguments(type, alpha, iid, k_coef, B, data))
+
+# Test if approximate_curves works as intended
+fourier_real, fourier_std = FunBootBand.approximate_curves(data, k_coef, iid)
 
 print(FunBootBand.main(data))
 
