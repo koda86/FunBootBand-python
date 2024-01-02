@@ -198,14 +198,40 @@ def bootstrap(fourier_koeffi, fourier_s, k_coef, B, iid, n_cluster, curves_per_c
         for k in range(n_time):
             bootstrap_std[k, i] = bootstrap_std_all[k, k, i]
 
-    return bootstrap_real, bootstrap_std
+    return bootstrap_real_mw, bootstrap_std
 
-def construct_bands(bootstrap_samples, alpha):
+def construct_bands(bootstrap_real_mw, bootstrap_std, fourier_real, fourier_real_mw, band_type, alpha, B, n_curves):
     """
     Function to construct statistical bands from bootstrap samples.
     """
-    # TODO: Implement band construction logic
-    pass
+    band_mean = np.mean(bootstrap_real_mw, axis=1)
+    band_sd = np.mean(bootstrap_std, axis=1)
+
+    if band_type == "prediction":
+        cp_data = np.zeros((n_curves, B))
+        cp_data_i = np.zeros((n_curves, B))
+
+        cp_mean = 0
+        cp_bound = 0
+        while cp_mean < (1 - alpha):
+            for i in range(B):
+                for k in range(n_curves):
+                    cp_data[k, i] = np.max(np.abs(fourier_real[:, k] - bootstrap_real_mw[:, i]) / bootstrap_std[:, i])
+                    cp_data_i[k, i] = cp_data[k, i] < cp_bound
+            cp_mean = np.mean(cp_data_i)
+            cp_bound += 0.05
+        band_boot = np.vstack((band_mean + cp_bound * band_sd, band_mean, band_mean - cp_bound * band_sd))
+
+    elif band_type == "confidence":
+        cc_data = np.zeros((n_curves, B))
+
+        for i in range(B):
+            for k in range(n_curves):
+                cc_data[k, i] = np.max(np.abs(bootstrap_real_mw[:, i] - fourier_real_mw) / bootstrap_std[:, i])
+        cc = np.quantile(cc_data, 1 - alpha)
+        band_boot = np.vstack((band_mean + cc * band_sd, band_mean, band_mean - cc * band_sd))
+
+    return band_boot
 
 def main(data, B=1000, alpha=0.05, iid=True):
     """
@@ -217,9 +243,9 @@ def main(data, B=1000, alpha=0.05, iid=True):
     fourier_koeffi, fourier_s, fourier_real = approximate_fourier_curves(data, k_coef, n_time, n_curves)
     fourier_real_mw, fourier_std = calculate_fourier_statistics(fourier_koeffi, fourier_s, k_coef, n_curves, n_time)
     
-    bootstrap_real, bootstrap_std = bootstrap(fourier_koeffi, fourier_s, k_coef, B, iid, n_cluster, curves_per_cluster, n_curves, n_time)
+    bootstrap_real_mw, bootstrap_std = bootstrap(fourier_koeffi, fourier_s, k_coef, B, iid, n_cluster, curves_per_cluster, n_curves, n_time)
     
-    bands = construct_bands(bootstrap_samples, alpha)
+    band_boot = construct_bands(bootstrap_real_mw, bootstrap_std, fourier_real, fourier_real_mw, band_type, alpha, B, n_curves)
     
     # Test if implementation works ...
     # Assume 'data' is pandas data.frame

@@ -8,13 +8,13 @@ data = pd.read_csv('example_data.csv')
 B = 5
 alpha = 0.05
 iid = True
-type = 'prediction'
+band_type = 'prediction' # Should not be named 'type' in Python
 k_coef = 20
 
 import FunBootBand
 
 """
-Check every function if it runs withour error
+Check if functions run without error
 """
 
 print(FunBootBand.initialize_variables(data, iid))
@@ -26,8 +26,20 @@ print(FunBootBand.bootstrap(fourier_koeffi, fourier_s, k_coef, B, iid, n_cluster
 # Test the main function
 print(FunBootBand.main(data))
 
-# Needs to be translated to Python!
-# plot(data[, 1], type = "l", ylim = c(-3, 3), ylab = "Amplitude")
-# apply(data, 2, function(x) lines(x))
-# apply(prediction.band, 1, function(x) lines(x, col = "red", lwd = 4))
+# Plot the bands
+import matplotlib.pyplot as plt
 
+plt.figure(figsize=(10, 6))
+
+# Plot each curve in the DataFrame
+for column in data.columns[1:]:  # Skip the first dummy column
+    plt.plot(data[column], color='black', linewidth=1)
+
+# Overlay the bands
+for i in range(band_boot.shape[0]):
+    plt.plot(band_boot[i, :], color='red', linewidth=4)
+
+# plt.title("Curves with Statistical Bands")
+plt.xlabel("Index")
+plt.ylabel("Amplitude")
+plt.show()
