@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 # path_directory = os.getenv('FunBootBand_PYTHON_PATH')
-path_directory = input("Enter the path to your FunBootBand-python folder: ")
+path_directory = input("Enter the path to FunBootBand.py: ")
 os.chdir(path_directory)
 
 import FunBootBand
