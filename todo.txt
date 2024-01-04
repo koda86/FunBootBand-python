@@ -1,0 +1,6 @@
+TODO FunBootBand-python
+
+- Problem der Warnung bei negativen Werten in der Wurzelfunktion (np.sqrt)
+- Implement try-except ... see the former function check_arguments()
+- More testing needs to be done, e.g. band_type="confidence"
+- Welche Möglichkeiten gibt es zur Verbesserung der Performance (Speed)?
