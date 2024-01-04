@@ -4,7 +4,7 @@ from scipy.linalg import svd
 
 def initialize_variables(data, iid):
   """
-  Initialize some global variables
+  Initialize global variables
   """
   if iid is False:
     if not isinstance(data, pd.DataFrame):
@@ -20,36 +20,36 @@ def initialize_variables(data, iid):
   
   n_time = data.shape[0]
   n_curves = data.shape[1]
-  time = np.arange(n_time)
   
-  return n_time, n_curves, time, n_cluster, curves_per_cluster
+  return n_time, n_curves, n_cluster, curves_per_cluster
 
 
-def check_arguments(type, alpha, iid, k_coef, B, data):
-    """
-    Function to check the validity of the input arguments
-    """
-    if not isinstance(type, str):
-        raise ValueError("'type' must be a variable of type 'character'.")
-    elif type not in ["confidence", "prediction"]:
-        raise ValueError("'type' must be either 'confidence' or 'prediction'.")
+# def check_arguments(band_type, alpha, iid, k_coef, B, data):
+#     """
+#     Function to check the validity of the input arguments
+#     """
+#     if not isinstance(band_type, str):
+#         raise ValueError("'band_type' must be a variable of type 'character'.")
+#     elif band_type not in ["confidence", "prediction"]:
+#         raise ValueError("'band_type' must be either 'confidence' or 'prediction'.")
+# 
+#     if not isinstance(alpha, (int, float)) or alpha <= 0 or alpha >= 1:
+#         raise ValueError("'alpha' must be a numeric value between 0 and 1.")
+# 
+#     if not isinstance(iid, bool):
+#         raise ValueError("'iid' must be a logical value (True or False).")
+# 
+#     if not isinstance(k_coef, (int, float)) or k_coef <= 0:
+#         raise ValueError("'k.coef' must be a positive integer.")
+# 
+#     if not isinstance(B, (int, float)) or B <= 0:
+#         raise ValueError("'B' must be a positive integer.")
+# 
+#     if data.isna().any().any():
+#         raise ValueError("Function stopped due to NA's in the input data.")
+#       
+#     return "All checks passed successfully."
 
-    if not isinstance(alpha, (int, float)) or alpha <= 0 or alpha >= 1:
-        raise ValueError("'alpha' must be a numeric value between 0 and 1.")
-
-    if not isinstance(iid, bool):
-        raise ValueError("'iid' must be a logical value (True or False).")
-
-    if not isinstance(k_coef, (int, float)) or k_coef <= 0:
-        raise ValueError("'k.coef' must be a positive integer.")
-
-    if not isinstance(B, (int, float)) or B <= 0:
-        raise ValueError("'B' must be a positive integer.")
-
-    if data.isna().any().any():
-        raise ValueError("Function stopped due to NA's in the input data.")
-      
-    return "All checks passed successfully."
 
 def pseudo_inverse(A, tol=np.finfo(float).eps**(2/3)):
     """
@@ -63,40 +63,7 @@ def pseudo_inverse(A, tol=np.finfo(float).eps**(2/3)):
     U = U[:, non_zero_indices]
     return np.dot(V[:, non_zero_indices], np.dot(np.diag(S_inv), U.conj().T))
 
-# def approximate_curves(data, k_coef, iid):
-#     """
-#     Function to approximate curves using Fourier functions.
-#     """
-#     # Approximate curves using Fourier functions
-#     fourier_s = np.ones(n_time)
-#     for k in range(1, k_coef * 2, 2):
-#         fourier_s = np.column_stack((fourier_s, np.cos(2 * np.pi * (k / 2) * time / (n_time - 1))))
-#         fourier_s = np.column_stack((fourier_s, np.sin(2 * np.pi * (k / 2) * time / (n_time - 1))))
-# 
-#     # Fourier coefficients and curves
-#     fourier_koeffi = np.zeros((k_coef * 2 + 1, n_curves))
-#     fourier_real = np.zeros((n_time, n_curves))
-# 
-#     for i in range(n_curves):
-#         fourier_koeffi[:, i] = np.dot(pseudo_inverse(np.dot(fourier_s.T, fourier_s)), np.dot(fourier_s.T, data.iloc[:, i]))
-#         fourier_real[:, i] = np.dot(fourier_s, fourier_koeffi[:, i])
-# 
-#     # Mean Fourier curve and standard deviation
-#     fourier_mean = np.mean(fourier_koeffi, axis=1)
-#     fourier_real_mw = np.dot(fourier_s, fourier_mean)
-# 
-#     fourier_std1 = np.zeros((k_coef * 2 + 1, k_coef * 2 + 1, n_curves))
-#     for i in range(n_curves):
-#         diff = fourier_koeffi[:, i] - fourier_mean
-#         fourier_std1[:, :, i] = np.outer(diff, diff)
-# 
-#     fourier_cov = np.mean(fourier_std1, axis=2)
-#     fourier_std_all = np.sqrt(np.dot(fourier_s, np.dot(fourier_cov, fourier_s.T)))
-#     fourier_std = np.diag(fourier_std_all)
-# 
-#     return fourier_real, fourier_std
 
-# Split approximate_curves into two subfunctions
 def approximate_fourier_curves(data, k_coef, n_time, n_curves):
     """
     Function to approximate curves using Fourier functions.
@@ -118,6 +85,7 @@ def approximate_fourier_curves(data, k_coef, n_time, n_curves):
 
     return fourier_koeffi, fourier_s, fourier_real
 
+
 def calculate_fourier_statistics(fourier_koeffi, fourier_s, k_coef, n_curves, n_time):
     """
     Function to calculate mean Fourier curve and standard deviation.
@@ -136,10 +104,6 @@ def calculate_fourier_statistics(fourier_koeffi, fourier_s, k_coef, n_curves, n_
 
     return fourier_real_mw, fourier_std
 
-
-# Example usage:
-# data = pd.read_csv('example_data.csv')
-# fourier_real, fourier_std = approximate_curves(data, k_coef=5, iid=False)
 
 def bootstrap(fourier_koeffi, fourier_s, k_coef, B, iid, n_cluster, curves_per_cluster, n_curves, n_time):
     """
@@ -200,6 +164,7 @@ def bootstrap(fourier_koeffi, fourier_s, k_coef, B, iid, n_cluster, curves_per_c
 
     return bootstrap_real_mw, bootstrap_std
 
+
 def construct_bands(bootstrap_real_mw, bootstrap_std, fourier_real, fourier_real_mw, band_type, alpha, B, n_curves):
     """
     Function to construct statistical bands from bootstrap samples.
@@ -233,23 +198,22 @@ def construct_bands(bootstrap_real_mw, bootstrap_std, fourier_real, fourier_real
 
     return band_boot
 
-def main(data, B=1000, alpha=0.05, iid=True):
+
+def band(data, B, alpha, iid, band_type, k_coef):
     """
     Main function to calculate statistical bands.
     """
-    check_arguments(type, alpha, iid, k_coef, B, data)
+    n_time, n_curves, n_cluster, curves_per_cluster = initialize_variables(data, iid)
     
-    # fourier_real, fourier_std = approximate_curves(data, k_coef, iid)
+    # Helper function to check if all arguments work. TODO: Implement try-except
+    # check_arguments(band_type, alpha, iid, k_coef, B, data)
+    
+    # fourier_real, fourier_std = approximate_curves(data, k_coef, iid) # TODO: delete
     fourier_koeffi, fourier_s, fourier_real = approximate_fourier_curves(data, k_coef, n_time, n_curves)
     fourier_real_mw, fourier_std = calculate_fourier_statistics(fourier_koeffi, fourier_s, k_coef, n_curves, n_time)
     
     bootstrap_real_mw, bootstrap_std = bootstrap(fourier_koeffi, fourier_s, k_coef, B, iid, n_cluster, curves_per_cluster, n_curves, n_time)
     
     band_boot = construct_bands(bootstrap_real_mw, bootstrap_std, fourier_real, fourier_real_mw, band_type, alpha, B, n_curves)
-    
-    # Test if implementation works ...
-    # Assume 'data' is pandas data.frame
-    colnames = data.columns
-    bands = colnames
 
-    return bands
+    return band_boot

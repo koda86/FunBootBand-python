@@ -2,44 +2,36 @@
 import os
 import pandas as pd
 
-os.chdir('/home/daniel/FunBootBand-python/')
-
-data = pd.read_csv('example_data.csv')
-B = 5
-alpha = 0.05
-iid = True
-band_type = 'prediction' # Should not be named 'type' in Python
-k_coef = 20
+# path_directory = os.getenv('FunBootBand_PYTHON_PATH')
+path_directory = input("Enter the path to your FunBootBand-python folder: ")
+os.chdir(path_directory)
 
 import FunBootBand
+# import importlib
+# importlib.reload(FunBootBand)
 
-"""
-Check if functions run without error
-"""
+data = pd.read_csv('example_data.csv')
+B = 10
+alpha = 0.05
+iid = True
+band_type = "prediction"
+k_coef = 50
 
-print(FunBootBand.initialize_variables(data, iid))
-print(FunBootBand.check_arguments(type, alpha, iid, k_coef, B, data))
-print(FunBootBand.approximate_fourier_curves(data, k_coef, n_time, n_curves))
-print(FunBootBand.calculate_fourier_statistics(fourier_koeffi, fourier_s, k_coef, n_curves, n_time))
-print(FunBootBand.bootstrap(fourier_koeffi, fourier_s, k_coef, B, iid, n_cluster, curves_per_cluster, n_curves, n_time))
-
-# Test the main function
-print(FunBootBand.main(data))
+band_boot = FunBootBand.band(data, B, alpha, iid, band_type, k_coef)
 
 # Plot the bands
 import matplotlib.pyplot as plt
 
-plt.figure(figsize=(10, 6))
+plt.figure()
 
-# Plot each curve in the DataFrame
-for column in data.columns[1:]:  # Skip the first dummy column
+# Plot each curve
+for column in data.columns:
     plt.plot(data[column], color='black', linewidth=1)
 
 # Overlay the bands
 for i in range(band_boot.shape[0]):
-    plt.plot(band_boot[i, :], color='red', linewidth=4)
+    plt.plot(band_boot[i, :], color='red', linewidth=2)
 
-# plt.title("Curves with Statistical Bands")
 plt.xlabel("Index")
 plt.ylabel("Amplitude")
 plt.show()
